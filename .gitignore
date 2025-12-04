@@ -1,0 +1,21 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Node.js modules
+node_modules/
+
+# Output directories
+output/
+temp/
+
+# OS files
+.DS_Store
+Thumbs.db
