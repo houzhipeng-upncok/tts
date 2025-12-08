@@ -22,12 +22,12 @@
           <option value="zh-CN-YunxiNeural">男声（激情）</option>
           <option value="zh-CN-YunhaoNeural">男声（沉稳）</option>
           <option value="zh-CN-XiaoxiaoNeural">女声（清晰）</option>
-          <option value="zh-CN-YunyangNeural">女声（热情）</option>
-          <option value="zh-CN-Children">童声</option>
+          <option value="zh-CN-YunyangNeural">女声（沉稳）</option>
+          <option value="zh-CN-Shandong">方言（山东）</option>
           <option value="zh-CN-Sichuan">方言（四川）</option>
           <option value="zh-CN-Northeast">方言（东北）</option>
           <option value="zh-CN-Cantonese">方言（广东）</option>
-          <option value="zh-CN-Henan">方言（河南）</option>
+          <option value="zh-CN-Taiwan">方言（台湾）</option>
         </select>
       </div>
       
