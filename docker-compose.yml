@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:15
+    container_name: tts-db
+    restart: always
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/db-init:/docker-entrypoint-initdb.d:ro
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backend
+    container_name: tts-backend
+    restart: always
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - db
+    working_dir: /app
+    environment:
+      PYTHONPATH: "/app/src"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/src:/app/src       # 热更新代码
+      - ./backend/output:/app/output # 音频输出映射
+      - ./backend/temp:/app/temp     # 缓存
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    container_name: tts-frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"     # 宿主机访问端口映射
+    volumes:
+      - ./frontend:/app  # 热更新代码
+
+volumes:
+  pgdata:
