@@ -1,106 +1,134 @@
 <template>
   <div class="app-container">
-    <h1 class="app-title">地摊叫卖录音生成器</h1>
-    <div class="app-description">免费微软 Edge-TTS + 内置BGM + 自动混音 + 可设置循环间隔</div>
+    <!-- 认证组件或主应用 -->
+    <AuthComponent 
+      v-if="!isAuthenticated" 
+      @auth-success="handleAuthSuccess"
+    />
     
-    <div class="form-container">
-      <!-- 文本输入区域 -->
-      <div class="form-item">
-        <label class="form-label">输入叫卖文案</label>
-        <textarea 
-          v-model="formData.text"
-          class="text-input"
-          placeholder="请输入您的叫卖文案，例如：全场 5 元，5 元任选！"
-          rows="4"
-        ></textarea>
-      </div>
-      
-      <!-- 声音类型选择 -->
-      <div class="form-item">
-        <label class="form-label">选择声音类型</label>
-        <select v-model="formData.voice" class="select-input">
-          <option value="zh-CN-YunxiNeural">男声（激情）</option>
-          <option value="zh-CN-YunhaoNeural">男声（沉稳）</option>
-          <option value="zh-CN-XiaoxiaoNeural">女声（清晰）</option>
-          <option value="zh-CN-YunyangNeural">女声（沉稳）</option>
-          <option value="zh-CN-Shandong">方言（山东）</option>
-          <option value="zh-CN-Sichuan">方言（四川）</option>
-          <option value="zh-CN-Northeast">方言（东北）</option>
-          <option value="zh-CN-Cantonese">方言（广东）</option>
-          <option value="zh-CN-Taiwan">方言（台湾）</option>
-        </select>
-      </div>
-      
-      <!-- 背景音乐选择 -->
-      <div class="form-item">
-        <label class="form-label">选择背景音乐</label>
-        <div class="bgm-selector">
-          <select v-model="formData.bgmCategory" class="category-select">
-            <option value="clearance">清仓甩卖</option>
-            <option value="food">美食叫卖</option>
-            <option value="fruits">水果蔬菜</option>
-            <option value="clothing">服装日用品</option>
-            <option value="supermarket">超市促销</option>
-          </select>
-          
-          <div class="bgm-list">
-            <button 
-              v-for="(bgm, index) in currentBgmList" 
-              :key="index"
-              :class="['bgm-item', { active: formData.bgm === bgm.file }]"
-              @click="formData.bgm = bgm.file"
-            >
-              {{ bgm.name }}
-              <audio :src="bgm.file" :ref="el => audioRefs[index] = el" preload="none"></audio>
-              <button 
-                class="preview-btn" 
-                @click.stop="togglePreview(audioRefs[index])"
-                :class="{ playing: playingAudio === audioRefs[index] }"
-              >
-                {{ playingAudio === audioRefs[index] ? '⏸️' : '▶️' }}
-              </button>
-            </button>
+    <div v-else class="main-app">
+      <!-- 头部导航 -->
+      <header class="app-header">
+        <div class="header-content">
+          <div class="header-left">
+            <h1 class="app-title">地摊叫卖录音生成器</h1>
+            <div class="app-description">免费微软 Edge-TTS + 内置BGM + 自动混音 + 可设置循环间隔</div>
+          </div>
+          <div class="header-right">
+            <div class="user-info">
+              <span>欢迎，{{ currentUser?.username }}</span>
+              <button @click="handleLogout" class="logout-btn">登出</button>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
       
-      <!-- 循环间隔设置 -->
-      <div class="form-item">
-        <label class="form-label">循环间隔（秒）: {{ formData.interval }}</label>
-        <input 
-          type="range"
-          v-model.number="formData.interval"
-          min="0"
-          max="15"
-          class="range-input"
+      <div class="form-container">
+        <!-- 文本输入区域 -->
+        <div class="form-item">
+          <label class="form-label">输入叫卖文案</label>
+          <textarea 
+            v-model="formData.text"
+            class="text-input"
+            placeholder="请输入您的叫卖文案，例如：全场 5 元，5 元任选！"
+            rows="4"
+          ></textarea>
+        </div>
+        
+        <!-- 声音类型选择 -->
+        <div class="form-item">
+          <label class="form-label">选择声音类型</label>
+          <select v-model="formData.voice" class="select-input">
+            <option value="zh-CN-YunxiNeural">男声（激情）</option>
+            <option value="zh-CN-YunhaoNeural">男声（沉稳）</option>
+            <option value="zh-CN-XiaoxiaoNeural">女声（清晰）</option>
+            <option value="zh-CN-YunyangNeural">女声（沉稳）</option>
+            <option value="zh-CN-Shandong">方言（山东）</option>
+            <option value="zh-CN-Sichuan">方言（四川）</option>
+            <option value="zh-CN-Northeast">方言（东北）</option>
+            <option value="zh-CN-Cantonese">方言（广东）</option>
+            <option value="zh-CN-Taiwan">方言（台湾）</option>
+          </select>
+        </div>
+        
+        <!-- 背景音乐选择 -->
+        <div class="form-item">
+          <label class="form-label">选择背景音乐</label>
+          <div class="bgm-selector">
+            <select v-model="formData.bgmCategory" class="category-select">
+              <option value="clearance">清仓甩卖</option>
+              <option value="food">美食叫卖</option>
+              <option value="fruits">水果蔬菜</option>
+              <option value="clothing">服装日用品</option>
+              <option value="supermarket">超市促销</option>
+            </select>
+            
+            <div class="bgm-list">
+              <button 
+                v-for="(bgm, index) in currentBgmList" 
+                :key="index"
+                :class="['bgm-item', { active: formData.bgm === bgm.file }]"
+                @click="formData.bgm = bgm.file"
+              >
+                {{ bgm.name }}
+                <audio :src="bgm.file" :ref="el => audioRefs[index] = el" preload="none"></audio>
+                <button 
+                  class="preview-btn" 
+                  @click.stop="togglePreview(audioRefs[index])"
+                  :class="{ playing: playingAudio === audioRefs[index] }"
+                >
+                  {{ playingAudio === audioRefs[index] ? '⏸️' : '▶️' }}
+                </button>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 循环间隔设置 -->
+        <div class="form-item">
+          <label class="form-label">循环间隔（秒）: {{ formData.interval }}</label>
+          <input 
+            type="range"
+            v-model.number="formData.interval"
+            min="0"
+            max="15"
+            class="range-input"
+          >
+          <div class="interval-hint">自动在音频尾部增加 {{ formData.interval }} 秒静默</div>
+        </div>
+        
+        <!-- 生成按钮 -->
+        <button 
+          class="generate-btn"
+          @click="generateAudio"
+          :disabled="isGenerating"
         >
-        <div class="interval-hint">自动在音频尾部增加 {{ formData.interval }} 秒静默</div>
+          {{ isGenerating ? '生成中...' : '生成音频' }}
+        </button>
       </div>
       
-      <!-- 生成按钮 -->
-      <button 
-        class="generate-btn"
-        @click="generateAudio"
-        :disabled="isGenerating"
-      >
-        {{ isGenerating ? '生成中...' : '生成音频' }}
-      </button>
-    </div>
-    
-    <!-- 音频播放器 -->
-    <div v-if="audioUrl" class="player-container">
-      <h3>生成结果</h3>
-      <audio :src="audioUrl" controls class="audio-player"></audio>
-      <a :href="audioUrl" download="叫卖录音.mp3" class="download-btn">下载 MP3</a>
+      <!-- 音频播放器 -->
+      <div v-if="audioUrl" class="player-container">
+        <h3>生成结果</h3>
+        <audio :src="audioUrl" controls class="audio-player"></audio>
+        <a :href="audioUrl" download="叫卖录音.mp3" class="download-btn">下载 MP3</a>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import AuthComponent from './components/AuthComponent.vue'
+
 export default {
   name: 'App',
+  components: {
+    AuthComponent
+  },
   data() {
     return {
+      isAuthenticated: false,
+      currentUser: null,
       formData: {
         text: '',
         voice: 'zh-CN-YunxiNeural',
@@ -179,7 +207,36 @@ export default {
       }
     }
   },
+  mounted() {
+    // 检查本地存储中的认证状态
+    this.checkAuthStatus()
+  },
   methods: {
+    checkAuthStatus() {
+      const token = localStorage.getItem('auth_token')
+      const user = localStorage.getItem('current_user')
+      
+      if (token && user) {
+        this.isAuthenticated = true
+        this.currentUser = JSON.parse(user)
+      }
+    },
+    
+    handleAuthSuccess(user) {
+      this.isAuthenticated = true
+      this.currentUser = user
+    },
+    
+    handleLogout() {
+      // 清除本地存储
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('current_user')
+      
+      // 重置状态
+      this.isAuthenticated = false
+      this.currentUser = null
+    },
+
     togglePreview(audio) {
       if (!audio) return
       
@@ -201,6 +258,7 @@ export default {
         this.playingAudio = null
       }
     },
+    
     async generateAudio() {
       if (!this.formData.text.trim()) {
         alert('请输入叫卖文案')
@@ -209,16 +267,29 @@ export default {
       
       this.isGenerating = true
       try {
+        // 获取认证token
+        const token = localStorage.getItem('token')
+        const headers = {
+          'Content-Type': 'application/json'
+        }
+        
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`
+        }
+        
         // 调用后端API
         const response = await fetch('http://localhost:8000/api/generate', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: headers,
           body: JSON.stringify(this.formData)
         })
         
         if (!response.ok) {
+          if (response.status === 401) {
+            alert('认证过期，请重新登录')
+            this.handleLogout()
+            return
+          }
           throw new Error('服务器响应错误')
         }
         
@@ -249,23 +320,65 @@ body {
 }
 
 .app-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.main-app {
   max-width: 900px;
   margin: 0 auto;
   padding: 20px;
 }
 
-.app-title {
-  text-align: center;
-  color: #e74c3c;
-  margin-bottom: 10px;
-  font-size: 32px;
+.app-header {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.app-description {
-  text-align: center;
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left h1 {
+  color: #e74c3c;
+  margin-bottom: 5px;
+  font-size: 24px;
+}
+
+.header-left .app-description {
   color: #666;
-  margin-bottom: 30px;
-  font-size: 16px;
+  font-size: 14px;
+  margin: 0;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-info span {
+  color: #333;
+  font-weight: 500;
+}
+
+.logout-btn {
+  padding: 8px 16px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+  background: #c0392b;
 }
 
 .form-container {
@@ -423,7 +536,7 @@ body {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .app-container {
+  .main-app {
     padding: 10px;
   }
   
@@ -431,8 +544,24 @@ body {
     padding: 20px;
   }
   
+  .header-content {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
   .bgm-list {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .header-left h1 {
+    font-size: 20px;
+  }
+  
+  .form-container {
+    padding: 15px;
   }
 }
 </style>
