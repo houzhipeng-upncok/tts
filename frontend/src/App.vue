@@ -111,7 +111,7 @@
       <div v-if="audioUrl" class="player-container">
         <h3>生成结果</h3>
         <audio :src="audioUrl" controls class="audio-player"></audio>
-        <a :href="audioUrl" download="叫卖录音.mp3" class="download-btn">下载 MP3</a>
+        <button @click="downloadAudio" class="download-btn">下载 MP3</button>
       </div>
     </div>
   </div>
@@ -259,6 +259,33 @@ export default {
       }
     },
     
+    async downloadAudio() {
+      if (!this.audioUrl) {
+        alert('请先生成音频')
+        return
+      }
+      
+      try {
+        const response = await fetch(this.audioUrl)
+        if (!response.ok) {
+          throw new Error('下载失败')
+        }
+        
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = '叫卖录音.mp3'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      } catch (error) {
+        console.error('下载失败:', error)
+        alert('下载失败，请重试')
+      }
+    },
+    
     async generateAudio() {
       if (!this.formData.text.trim()) {
         alert('请输入叫卖文案')
@@ -294,7 +321,8 @@ export default {
         }
         
         const data = await response.json()
-        this.audioUrl = `http://localhost:8000${data.url}`
+        // 使用正确的API路径获取音频文件
+        this.audioUrl = `http://localhost:8000/api${data.url}`
       } catch (error) {
         console.error('生成音频失败:', error)
         alert('生成音频失败，请重试')

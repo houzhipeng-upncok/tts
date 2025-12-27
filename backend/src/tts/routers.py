@@ -58,7 +58,7 @@ async def generate_audio(request: TTSRequest, background_tasks: BackgroundTasks)
         print("[日志] 已添加音频文件24小时后自动清理任务")
         
         response = {
-            "url": f"/output/{output_filename}",
+            "url": f"/api/output/{output_filename}",
             "filename": output_filename,
             "size": final_size,
             "message": "音频文件生成成功"
@@ -75,7 +75,7 @@ async def generate_audio(request: TTSRequest, background_tasks: BackgroundTasks)
         print(f"[错误] 异常堆栈: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"音频生成失败: {str(e)}")
 
-@router.get("/api/output/{filename}")
+@router.get("/output/{filename}")
 async def get_output_file(filename: str):
     """获取生成的音频文件"""
     file_path = get_file_path(filename)
