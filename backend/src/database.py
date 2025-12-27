@@ -16,13 +16,14 @@ DB_PASSWORD = os.getenv("DB_PASSWORD", "123456")
 DB_PORT = os.getenv("DB_PORT", "5432")
 
 # 构建数据库URL
-SQLALCHEMY_DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+load_dotenv()  # 允许容器自动加载环境变量
 
-# 创建数据库引擎
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    poolclass=NullPool
+DATABASE_URL = (
+    f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}"
+    f"@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
 )
+
+engine = create_engine(DATABASE_URL, echo=True)
 
 # 创建会话
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
