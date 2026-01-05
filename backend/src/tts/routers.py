@@ -58,7 +58,7 @@ async def generate_audio(request: TTSRequest, background_tasks: BackgroundTasks)
         print("[日志] 已添加音频文件24小时后自动清理任务")
         
         response = {
-            "url": f"/api/output/{output_filename}",
+            "url": f"/output/{output_filename}",
             "filename": output_filename,
             "size": final_size,
             "message": "音频文件生成成功"

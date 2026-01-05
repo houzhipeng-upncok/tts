@@ -130,7 +130,8 @@ def _register_domain_routes(app: FastAPI) -> None:
 # --------------------------------------------------
 
 def _register_static(app: FastAPI) -> None:
-    output_dir = os.path.join(current_dir, "output")
+    # 项目根目录下的 output 目录，而不是 src 目录下的 output 目录
+    output_dir = os.path.join(os.path.dirname(current_dir), "output")
     os.makedirs(output_dir, exist_ok=True)
     app.mount("/output", StaticFiles(directory=output_dir), name="output")
 
